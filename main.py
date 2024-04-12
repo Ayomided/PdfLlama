@@ -1,24 +1,35 @@
-"""
-This script creates a database of information gathered from local text files.
-"""
+import argparse
+import timeit
+from utils import setup_dbqa
+import warnings
+from langchain._api import LangChainDeprecationWarning
+warnings.simplefilter("ignore", category=LangChainDeprecationWarning)
 
-from langchain.document_loaders import DirectoryLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', type=str)
+    args = parser.parse_args()
+    start = timeit.default_timer()  # Start timer
 
-# define what documents to load
-loader = DirectoryLoader("./", glob="*.txt", loader_cls=TextLoader)
+    # Setup QA object
+    dbqa = setup_dbqa()
 
-# interpret information in the documents
-documents = loader.load()
-splitter = RecursiveCharacterTextSplitter(chunk_size=500,
-                                          chunk_overlap=50)
-texts = splitter.split_documents(documents)
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",
-    model_kwargs={'device': 'cpu'})
+    # Parse input from argparse into QA object
+    response = dbqa({'query': args.input})
+    end = timeit.default_timer()  # End timer
 
-# create and save the local database
-db = FAISS.from_documents(texts, embeddings)
-db.save_local("faiss")
+    # Print document QA response
+    print(f'\nAnswer: {response["result"]}')
+    print('='*50)  # Formatting separator
+
+    # Process source documents for better display
+    source_docs = response['source_documents']
+    for i, doc in enumerate(source_docs):
+        print(f'\nSource Document {i+1}\n')
+        print(f'Source Text: {doc.page_content}')
+        print(f'Document Name: {doc.metadata["source"]}')
+        print(f'Page Number: {doc.metadata["page"]}\n')
+        print('=' * 50)  # Formatting separator
+
+    # Display time taken for CPU inference
+    print(f"Time to retrieve response: {end - start}")
