@@ -11,7 +11,7 @@ import os
 
 def set_qa_prompt():
     prompt = PromptTemplate(template=qa_template,
-                            input_variables=['context', 'question'])
+                            input_variables=['question'])
     return prompt
 
 
