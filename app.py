@@ -1,5 +1,5 @@
 from langchain.prompts import PromptTemplate
-from langchain_community.llms import CTransformers
+from langchain_community.llms import CTransformers, Ollama
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
@@ -11,14 +11,15 @@ import streamlit as st
 
 ## Get response from Llama 2 Model
 def getResponse(question):
-    llm = CTransformers(model='/Users/davidayomide/Downloads/Dev/PdfLlama/models/llama-2-7b-chat.ggmlv3.q8_0.bin',
-                        # alternatively
-                        # model='TheBloke/Llama-2-7B-Chat-GGML',
-                        # model_file='llama-2-7b-chat.ggmlv3.q8_0.bin',
-                        model_type='llama',
-                        config={'max_new_tokens': 600,
-                                'temperature': 0.01,
-                                'context_length':2048})
+    # llm = CTransformers(model='/Users/davidayomide/Downloads/Dev/PdfLlama/models/llama-2-7b-chat.ggmlv3.q8_0.bin',
+    #                     # alternatively
+    #                     # model='TheBloke/Llama-2-7B-Chat-GGML',
+    #                     # model_file='llama-2-7b-chat.ggmlv3.q8_0.bin',
+    #                     model_type='llama',
+    #                     config={'max_new_tokens': 600,
+    #                             'temperature': 0.01,
+    #                             'context_length':2048})
+    llm = Ollama(model="llama2", temperature=0.01)
     # Prompt template
     qa_template = """Use the following pieces of information to answer the user's question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 

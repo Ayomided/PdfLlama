@@ -9,7 +9,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS, Chroma
 from PyPDF2 import PdfReader
 from langchain.prompts import PromptTemplate
-from langchain_community.llms import CTransformers
+from langchain_community.llms import CTransformers, Ollama
 from langchain.chains import RetrievalQA
 import os
 
@@ -83,7 +83,7 @@ print(f"Save {len(all_splits)} chunks to {CHROMA_PATH}")
 
 ## Database test
 
-question = "How did Alice meet the Bunny?"
+question = "How did Alice meet the Mad Hatter?"
 docs = db.similarity_search_with_relevance_scores(question, k=1)
 # # print(all_splits)
 print("==========================================================================")
@@ -94,15 +94,18 @@ print("Some result using similarity search")
 print(docs)
 print('-------------')
 
-llm = CTransformers(
-                    model='models/llama-2-7b-chat.ggmlv3.q8_0.bin',
-#                     # alternatively
-#                     model='TheBloke/Llama-2-7B-Chat-GGML',
-#                     model_file='llama-2-7b-chat.ggmlv3.q8_0.bin',
-                    model_type='llama',
-                    config={'max_new_tokens': 600,
-                            'temperature': 0.01,
-                            'context_length':2048})
+# llm = CTransformers(
+#                     model='models/llama-2-7b-chat.ggmlv3.q8_0.bin',
+# #                     # alternatively
+# #                     model='TheBloke/Llama-2-7B-Chat-GGML',
+# #                     model_file='llama-2-7b-chat.ggmlv3.q8_0.bin',
+#                     model_type='llama',
+#                     config={'max_new_tokens': 600,
+#                             'temperature': 0.01,
+#                             'context_length':2048})
+
+llm = Ollama(model="llama2", temperature=0.01)
+
 qa_template = """Use the following pieces of information to answer the user's question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
             Context: {context}
