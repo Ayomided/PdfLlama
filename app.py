@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain_community.llms import CTransformers
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
 import streamlit as st
 
@@ -16,8 +16,9 @@ def getResponse(question):
                         # model='TheBloke/Llama-2-7B-Chat-GGML',
                         # model_file='llama-2-7b-chat.ggmlv3.q8_0.bin',
                         model_type='llama',
-                        config={'max_new_tokens': 256,
-                                'temperature': 0.01})
+                        config={'max_new_tokens': 600,
+                                'temperature': 0.01,
+                                'context_length':2048})
     # Prompt template
     qa_template = """Use the following pieces of information to answer the user's question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
@@ -35,13 +36,15 @@ def getResponse(question):
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
                                        model_kwargs={'device': 'cpu'})
 
-    vectordb = FAISS.load_local('/Users/davidayomide/Downloads/Dev/PdfLlama/vectorstore/faiss_db',
-                                embeddings=embeddings, allow_dangerous_deserialization=True)
+    CHROMA_PATH = "chroma"
+
+    vectordb = Chroma(embedding_function=embeddings,
+                      persist_directory=CHROMA_PATH)
 
     qa_chain = RetrievalQA.from_chain_type(llm=llm,
                                            retriever=vectordb.as_retriever(
-                                               search_type="similarity",
-                                               search_kwargs={"k": 9}),
+                                               search_kwargs={"k": 2},
+                                               search_type='similarity'),
                                     return_source_documents=True,
                                     chain_type="stuff",
                                     chain_type_kwargs={'prompt': prompt})
